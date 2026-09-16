@@ -11,17 +11,32 @@ jobs:
     - name: Checkout repository code
       uses: actions/checkout@v4
 
-    - name: Install and Setup Tmate
+    - name: Set up Mac Terminal Tunnel
+      env:
+        NGROK_TOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
       run: |
-        brew install tmate
-        tmate -F &
+        # Download and install ngrok via homebrew
+        brew install ngrok/ngrok/ngrok
+        
+        # Configure the token
+        ngrok config add-authtoken $NGROK_TOKEN
+        
+        # Enable the native macOS SSH service
+        sudo systemsetup -setremotelogin on
+        
+        # Start the tunnel in the background
+        ngrok tcp 22 --log=stdout > /dev/null &
         sleep 5
+        
+        # Query the ngrok API to pull the public endpoint out cleanly
         echo "=========================================================="
-        echo "YOUR MAC WEB TERMINAL LINK IS BELOW:"
-        tmate display -p '#{tmate_web}'
+        echo "YOUR MAC TERMINAL SSH COMMAND IS BELOW:"
+        curl -s http://127.0.0 | grep -o 'tcp://[^"]*'
+        echo "=========================================================="
+        echo "Password for username 'runner' is: runner"
         echo "=========================================================="
 
-    - name: Keep Terminal Alive
+    - name: Keep Runner Session Alive
       run: |
-        # This keeps the runner running so you can use the link above
-        sleep 21600 
+        # Keeps your server open for up to 6 hours
+        sleep 21600
