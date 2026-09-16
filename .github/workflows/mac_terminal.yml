@@ -5,11 +5,23 @@ on:
 
 jobs:
   terminal:
-    runs-on: macos-14 # Uses modern macOS Sonoma on Apple Silicon
+    runs-on: macos-14
 
     steps:
     - name: Checkout repository code
       uses: actions/checkout@v4
 
-    - name: Connect to Mac Terminal
-      uses: mxschmitt/action-tmate@v3
+    - name: Install and Setup Tmate
+      run: |
+        brew install tmate
+        tmate -F &
+        sleep 5
+        echo "=========================================================="
+        echo "YOUR MAC WEB TERMINAL LINK IS BELOW:"
+        tmate display -p '#{tmate_web}'
+        echo "=========================================================="
+
+    - name: Keep Terminal Alive
+      run: |
+        # This keeps the runner running so you can use the link above
+        sleep 21600 
