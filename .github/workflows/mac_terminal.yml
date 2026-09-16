@@ -1,0 +1,15 @@
+name: Open Free Mac Terminal
+
+on:
+  workflow_dispatch:
+
+jobs:
+  terminal:
+    runs-on: macos-14 # Uses modern macOS Sonoma on Apple Silicon
+
+    steps:
+    - name: Checkout repository code
+      uses: actions/checkout@v4
+
+    - name: Connect to Mac Terminal
+      uses: mxschmitt/action-tmate@v3
