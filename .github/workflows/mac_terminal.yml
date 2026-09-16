@@ -11,32 +11,21 @@ jobs:
     - name: Checkout repository code
       uses: actions/checkout@v4
 
-    - name: Set up Mac Terminal Tunnel
-      env:
-        NGROK_TOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
+    - name: Install Cloudflared & Setup Web Terminal
       run: |
-        # Download and install ngrok via homebrew
-        brew install ngrok/ngrok/ngrok
+        # Download and install Cloudflare's tunneling client
+        brew install cloudflare/cloudflare/cloudflared
         
-        # Configure the token
-        ngrok config add-authtoken $NGROK_TOKEN
+        # Install ttyd to turn the Mac console into a secure web panel
+        brew install ttyd
         
-        # Enable the native macOS SSH service
-        sudo systemsetup -setremotelogin on
+        # Start a secure local web terminal instance in the background on port 8080
+        # Username: admin | Password: password123
+        ttyd -p 8080 -c admin:password123 login &
+        sleep 3
         
-        # Start the tunnel in the background
-        ngrok tcp 22 --log=stdout > /dev/null &
-        sleep 5
-        
-        # Query the ngrok API to pull the public endpoint out cleanly
+        # Expose the local terminal port to a public temporary Cloudflare URL
         echo "=========================================================="
-        echo "YOUR MAC TERMINAL SSH COMMAND IS BELOW:"
-        curl -s http://127.0.0 | grep -o 'tcp://[^"]*'
+        echo "WAITING FOR YOUR FREE WEB TERMINAL LINK..."
         echo "=========================================================="
-        echo "Password for username 'runner' is: runner"
-        echo "=========================================================="
-
-    - name: Keep Runner Session Alive
-      run: |
-        # Keeps your server open for up to 6 hours
-        sleep 21600
+        cloudflared tunnel --url http://localhost:8080
